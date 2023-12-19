@@ -26,12 +26,6 @@ import {
   BlogPostList,
   BlogPostShow,
 } from "./pages/blog-posts";
-import {
-  CategoryCreate,
-  CategoryEdit,
-  CategoryList,
-  CategoryShow,
-} from "./pages/categories";
 import { VideoList, VideoShow } from "./pages/Main";
 import StateProvider from "./contexts/generContext";
 
