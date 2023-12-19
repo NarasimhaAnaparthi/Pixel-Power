@@ -1,0 +1,51 @@
+#main {
+  margin: 15px 100px;
+}
+
+.video-card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2%;
+}
+
+.video-card {
+  width: fit-content;
+}
+
+.video-card img {
+  border-radius: 10px;
+  width: 17rem;
+  border: 1px solid;
+}
+
+.video-card h4 {
+  font-weight: 600;
+  margin-top: 8px;
+  margin-left: 8px;
+  text-overflow: clip;
+  max-width: 17rem;
+}
+
+.ant-upload-wrapper.ant-upload-picture-card-wrapper {
+  width: auto;
+}
+
+.ant-upload-wrapper.ant-upload-picture-card-wrapper
+  .ant-upload.ant-upload-select {
+  width: 17rem;
+  height: 10rem;
+}
+
+.subtitles {
+  position: relative;
+  width: fit-content;
+  bottom: -17rem;
+  left: 14rem;
+  background: gray;
+  padding: 3px;
+  border-radius: 5px;
+}
+
+.pointer{
+    cursor: pointer;
+}

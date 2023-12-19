@@ -1,0 +1,52 @@
+.ant-tabs-nav-wrap {
+  justify-content: center !important;
+}
+
+.heading {
+  font-weight: 600;
+  font-size: 2rem;
+  background: -webkit-linear-gradient(
+    #0f0c10,
+    #0f0c10,
+    #0f0c10,
+    #552465,
+    #552465,
+    #552465,
+    #77348e,
+    #77348e,
+    #77348e,
+    #ca80c8,
+    #ca80c8,
+    #ca80c8
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: transparent !important;
+  background: -webkit-linear-gradient(
+    #0f0c10,
+    #0f0c10,
+    #0f0c10,
+    #552465,
+    #552465,
+    #552465,
+    #77348e,
+    #77348e,
+    #77348e,
+    #ca80c8,
+    #ca80c8,
+    #ca80c8
+  ) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.ant-tabs-tab.ant-tabs-tab-active span span svg {
+  color: #77348e !important;
+}
+
+.ant-tabs-tab-active{
+    border-bottom: #552465 !important;
+}
