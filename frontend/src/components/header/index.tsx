@@ -10,27 +10,19 @@ import {
   theme,
 } from "antd";
 import "./index.css";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import { ColorModeContext } from "../../contexts/color-mode";
 import { ContactsOutlined, ReadOutlined } from "@ant-design/icons";
-import { VideoList } from "../../pages/Main";
 import { StateContext } from "../../contexts/generContext";
 import { useNavigate } from "react-router-dom";
 
-const { Text } = Typography;
 const { useToken } = theme;
-
-type IUser = {
-  id: number;
-  name: string;
-  avatar: string;
-};
 
 export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   sticky,
 }) => {
   const { token } = useToken();
-  // const { data: user } = useGetIdentity<IUser>();
+  // const { data: user } = useGetIdentity<IUIser>();
   const { mode, setMode } = useContext(ColorModeContext);
 
   const headerStyles: React.CSSProperties = {
@@ -44,9 +36,9 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   const [state, dispatch] = useContext(StateContext);
 
   useEffect(() => {
-    let tabState = location?.pathname=="/video"
-    dispatch({...state,tabRequired:tabState})
-  },[]);
+    let tabState = location?.pathname == "/video";
+    dispatch({ ...state, tabRequired: tabState });
+  }, []);
 
   if (sticky) {
     headerStyles.position = "sticky";
@@ -59,10 +51,16 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
       <AntdLayout.Header style={headerStyles}>
         <Space align="center" className="pointer">
           {/* <a href="/"> */}
-            <img width={80} src="/powerPixelLogo.png" onClick={()=>navigate("/video")} />
+          <img
+            width={80}
+            src="/powerPixelLogo.png"
+            onClick={() => navigate("/video")}
+          />
           {/* </a> */}
         </Space>
-        <Space className="heading pointer" onClick={()=>navigate("/video")}>Pixel Power</Space>
+        <Space className="heading pointer" onClick={() => navigate("/video")}>
+          Pixel Power
+        </Space>
         <Space>
           <Switch
             checkedChildren="🌛"
@@ -77,15 +75,14 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
           tabPosition={"top"}
           defaultActiveKey="2"
           onTabClick={(e) => dispatch({ ...state, type: e })}
-          items={[ReadOutlined, ContactsOutlined].map((Icon, i) => {
-            const id = i == 0 ? "Education" : "Entertainment";
-            return {
-              key: id,
-              label: `${id}`,
+          items={[
+            {
+              key: "Education",
+              label: "Education",
               children: "",
-              icon: <Icon />,
-            };
-          })}
+              icon: <ReadOutlined />,
+            },
+          ]}
         />
       )}
     </>

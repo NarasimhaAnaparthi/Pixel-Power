@@ -1,10 +1,7 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { StateContext } from "../../contexts/generContext";
 import "./style.css";
-import VideoCard from "../../components/videoCard";
-import { Upload, UploadFile, UploadProps, message } from "antd";
-import { RcFile, UploadChangeParam } from "antd/lib/upload";
-import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
+import { RcFile } from "antd/lib/upload";
 import EducationCategory from "../../components/EducationCategory";
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {

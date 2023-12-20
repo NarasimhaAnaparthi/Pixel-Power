@@ -4,10 +4,11 @@ import { StateContext } from "../../contexts/generContext";
 
 const VideoPlayer = ({ subtitles, videoUrl, transcrip }: any) => {
   const [currentTime, setCurrentTime] = useState(0);
+  const [previous, setPrevious] = useState("");
   const [startTranscation, setStartTranscation] = useState(false);
   const [reloadTimestamp, setReloadTimestamp] = useState(0);
-  // const [blobUrl, setBlobUrl] = useState("");
 
+  // const [blobUrl, setBlobUrl] = useState("");
   // useEffect(() => {
   //   const vttContent =
   //     "WEBVTT\n\n" +
@@ -52,18 +53,12 @@ const VideoPlayer = ({ subtitles, videoUrl, transcrip }: any) => {
   );
 
   useEffect(() => {
-    currentSubtitle?.text && setText(text + currentSubtitle?.text + ".");
+    if (previous !== currentSubtitle?.text) {
+      currentSubtitle?.text && setText(text + currentSubtitle?.text + ".");
+	  setPrevious(currentSubtitle?.text)
+    }
   }, [currentSubtitle]);
 
-  // value == "original"
-  //   ? original
-  //   : value == "telugu"
-  //   ? telugu
-  //   : value == "hindi"
-  //   ? hindi
-  //   : value == "tamil"
-  //   ? tamil
-  //   : "";
   const videoRef: any = useRef();
 
   useEffect(() => {
@@ -102,6 +97,9 @@ const VideoPlayer = ({ subtitles, videoUrl, transcrip }: any) => {
             startTranscation={startTranscation}
           />
         </div>
+        <div style={{ flex: 1 }}>
+          <>keywords</>
+        </div>
       </div>
     </div>
   );
@@ -113,16 +111,16 @@ const VideoPlayer = ({ subtitles, videoUrl, transcrip }: any) => {
 // };
 
 // const generateVTTTrack = (subtitles: any) => {
-  // const vttContent =
-  //   "WEBVTT\n\n" +
-  //   subtitles
-  //     .map(
-  //       (subtitle: any, index: any) =>
-  //         `${formatTime(subtitle.start)} --> ${formatTime(subtitle.end)}\n${
-  //           subtitle.text
-  //         }\n\n`
-  //     )
-  //     .join("");
+// const vttContent =
+//   "WEBVTT\n\n" +
+//   subtitles
+//     .map(
+//       (subtitle: any, index: any) =>
+//         `${formatTime(subtitle.start)} --> ${formatTime(subtitle.end)}\n${
+//           subtitle.text
+//         }\n\n`
+//     )
+//     .join("");
 
 //   const blob = new Blob([vttContent], { type: "text/vtt" });
 //   const url = URL.createObjectURL(blob);
@@ -143,13 +141,11 @@ const Subtitle = ({ videoUrl, currentSubtitle }: any) => {
   );
 };
 
-let text: any = [];
 const Transcription = ({ transcript, startTranscation }: any) => {
-  text.push(transcript.text);
   return (
     <div>
       <h2>Transcription</h2>
-      {startTranscation && <p>{transcript}</p>}
+      {startTranscation && <p style={{ padding: "10px" }}>{transcript}</p>}
     </div>
   );
 };
@@ -253,11 +249,7 @@ export const VideoShow: React.FC<any> = () => {
           { value: "original", label: "Original" },
         ]}
       />
-      <VideoPlayer
-        subtitles={subtitles}
-        videoUrl={videoUrl}
-        transcript={transcript}
-      />
+      <VideoPlayer subtitles={subtitles} videoUrl={videoUrl} />
     </div>
   );
 };
