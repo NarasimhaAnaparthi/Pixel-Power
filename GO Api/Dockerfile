@@ -32,7 +32,7 @@ FROM alpine:3.14.0
 
 COPY --from=builder /dist/main /
 
-ENV SERVICE_PORT=3001 \
+ENV SERVICE_PORT=3000 \
     AI_URL="https://154c-14-141-24-158.ngrok.io/process_video"
 
 EXPOSE ${SERVICE_PORT}
