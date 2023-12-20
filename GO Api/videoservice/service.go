@@ -29,6 +29,7 @@ type HandlerService struct{}
 func (hs *HandlerService) Bootstrap(r *gin.Engine) {
 	r.POST("/upload", hs.UploadVideo1)
 	r.GET("/videos/:folderName", hs.GetAllGcpVideo2)
+	r.GET("/convertedvideos", hs.GetAllTranscriptionVideo)
 	r.GET("/video/:objectName", hs.GetGcpVideo)
 	r.GET("/lang/video/:objectName", hs.GetGcpVideoLang)
 
@@ -132,7 +133,8 @@ func (hs *HandlerService) GetGcpVideo(c *gin.Context) {
 		"uploadTime":   attrs.Created,
 		"url":          fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucketName, objectName),
 	}
-	apiURL :=  os.Getenv("AI_URL")
+	fmt.Println("responseresponse" , response)
+	apiURL := os.Getenv("AI_URL")
 	requestData := RequestBody{
 		VideoURL:            fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucketName, objectName),
 		TranslationLanguage: "ta",
@@ -380,4 +382,47 @@ func (hs *HandlerService) GetGcpVideoLang(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, responsea)
+}
+
+func (hs *HandlerService) GetAllTranscriptionVideo(c *gin.Context) {
+	ctx := context.Background()
+	client, gcperr := getGCPClient()
+	if gcperr != nil {
+		fmt.Println("from gcp Connection", gcperr)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to Google Cloud Storage"})
+		return
+	}
+	defer client.Close()
+	videoType := c.Query("video")
+	bucketName := "encode_project_pixelpower"
+	folderName := os.Getenv("VIDEO_OUTPUT_FOLDER")
+
+	languageFolder := []string{"Default", "Hindi", "Telugu", "Tamil"}
+	var videos []map[string]interface{}
+	for _, lang := range languageFolder {
+		// query := &storage.Query{Prefix: folderName + "/" + lang + "/", Delimiter: "/"}
+		objectName := folderName + "/" + lang + "/" + videoType
+		fmt.Println("objectName" , objectName)
+		obj := client.Bucket(bucketName).Object(objectName)
+
+		attrs, err := obj.Attrs(ctx)
+		if err != nil {
+			continue
+
+		}
+		filenameInBucket := strings.Split(attrs.Name, "/")
+		// Create the desired JSON response
+		video := gin.H{
+			"fileName":     filenameInBucket[len(filenameInBucket)-1],
+			"modifiedTime": attrs.Updated,
+			"uploadTime":   attrs.Created,
+			"url":          fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucketName, objectName),
+		}
+		videos = append(videos, video)
+	}
+	if videos == nil {
+		c.JSON(http.StatusOK, gin.H{"videos": make([]int, 0)})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"videos": videos})
 }
