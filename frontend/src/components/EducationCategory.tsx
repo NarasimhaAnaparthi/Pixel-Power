@@ -6,6 +6,9 @@ import { UploadProps, message } from "antd/lib";
 import { RcFile, UploadChangeParam, UploadFile } from "antd/lib/upload";
 import eduImage from "/public/edu.jpg";
 import { StateContext } from "../contexts/generContext";
+import { api } from "../App";
+import { axiosInstance } from "@refinedev/simple-rest";
+import { useNotification } from "@pankod/refine-core";
 
 const beforeUpload = (file: RcFile) => {
   console.log(file.size);
@@ -22,8 +25,13 @@ const beforeUpload = (file: RcFile) => {
 
 const EducationCategory = (props: any) => {
   const [loading, setLoading] = useState(false);
-  const [videoUrl, setVideoUrl] = useState<string>();
+  const { open } = useNotification();
   const [state, dispatch] = useContext(StateContext);
+  const uploadFile = async ({ onSuccess, file }: any) => {
+    setTimeout(() => {
+      onSuccess("ok");
+    }, 0);
+  };
 
   const uploadButton = (
     <div>
@@ -32,36 +40,36 @@ const EducationCategory = (props: any) => {
     </div>
   );
 
-  const getBase64 = (img: RcFile, callback: (url: string) => void) => {
-    const reader = new FileReader();
-    reader.addEventListener("load", () => callback(reader.result as string));
-    reader.readAsDataURL(img);
-  };
-
-  const handleChange: UploadProps["onChange"] = (
-    info: UploadChangeParam<UploadFile>
-  ) => {
-    if (info.file.status === "uploading") {
+  const handleChange: any = (event: any) => {
+    const formData = new FormData();
+    if (event.file.percent == 100) {
+      formData.append("video", event.file.originFileObj);
       setLoading(true);
-      return;
+      axiosInstance
+        .post("http://34.123.104.93:3000/upload?videoType=education", formData)
+        .then(({ data }) => {
+          console.log(data?.videoName);
+          let langArray = ["hi", "te", "ta"];
+          langArray.map((lang) => {
+            setTimeout(() => {
+              axiosInstance
+                .get(
+                  `http://34.123.104.93:3000/lang/video/${data?.videoName}?videoType=education&lang=${lang}`
+                )
+                .then(({ data }) => {
+                  setLoading(false);
+                  props?.reFetch();
+                });
+            }, 500);
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     }
-    if (info.file.status === "done") {
-      // Get this url from response in real world.
-      getBase64(info.file.originFileObj as RcFile, (url) => {
-        setLoading(false);
-        setVideoUrl(url);
-      });
-    }
+    // axiosInstance.post(api+"/upload?videoType=education",)
   };
-  const imageLink =
-    state?.type == "Education"
-      ? eduImage
-      : "https://youtu.be/3wDiqlTNlfQ?si=V5ZyMvfSyyNm0YfI";
-
-  const title =
-    state?.type == "Education"
-      ? "React Tutorial for Beginners "
-      : "LEO - Naa Ready Song Video | Thalapathy Vijay | Lokesh Kanagaraj | Anirudh Ravichander";
+  const imageLink = eduImage;
 
   return (
     <div className="video-card-container">
@@ -70,14 +78,20 @@ const EducationCategory = (props: any) => {
         listType="picture-card"
         className="avatar-uploader"
         showUploadList={false}
-        action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
         beforeUpload={beforeUpload}
         onChange={handleChange}
+        customRequest={uploadFile}
       >
         {uploadButton}
       </Upload>
-      {props?.a.map((_:any, i:any) => {
-        return <VideoCard imageLink={imageLink} i={i} title={title} />;
+      {props?.a?.map((data: any, i: any) => {
+        return (
+          <VideoCard
+            imageLink={imageLink}
+            url={data?.url}
+            title={data?.fileName}
+          />
+        );
       })}
     </div>
   );

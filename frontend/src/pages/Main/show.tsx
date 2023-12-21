@@ -1,34 +1,20 @@
 import { Select } from "antd";
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { StateContext } from "../../contexts/generContext";
+import { useParams } from "react-router-dom";
+import { useList } from "@refinedev/core";
+import LoadingSpinner from "../../components/loadingSpinner";
 
-const VideoPlayer = ({ subtitles, videoUrl, transcrip }: any) => {
+const VideoPlayer = ({
+  subtitles,
+  videoUrl,
+  transcript,
+  setTransValue,
+}: any) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [previous, setPrevious] = useState("");
   const [startTranscation, setStartTranscation] = useState(false);
   const [reloadTimestamp, setReloadTimestamp] = useState(0);
-
-  // const [blobUrl, setBlobUrl] = useState("");
-  // useEffect(() => {
-  //   const vttContent =
-  //     "WEBVTT\n\n" +
-  //     subtitles
-  //       .map(
-  //         (subtitle: any, index: any) =>
-  //           `${formatTime(subtitle.start)} --> ${formatTime(subtitle.end)}\n${
-  //             subtitle.text
-  //           }\n\n`
-  //       )
-  //       .join("");
-
-  //   const blob = new Blob([vttContent], { type: "text/vtt" });
-  //   const url: any = URL.createObjectURL(blob);
-
-  //   setBlobUrl(url);
-  //   // Cleanup Blob URL when component unmounts
-  //   return () => URL.revokeObjectURL(url);
-  // }, []);
-  // console.log(blobUrl)
 
   const handleTimeUpdate = (event: any) => {
     setCurrentTime(event.target.currentTime * 1000); // Convert seconds to milliseconds
@@ -55,7 +41,7 @@ const VideoPlayer = ({ subtitles, videoUrl, transcrip }: any) => {
   useEffect(() => {
     if (previous !== currentSubtitle?.text) {
       currentSubtitle?.text && setText(text + currentSubtitle?.text + ".");
-	  setPrevious(currentSubtitle?.text)
+      setPrevious(currentSubtitle?.text);
     }
   }, [currentSubtitle]);
 
@@ -93,12 +79,10 @@ const VideoPlayer = ({ subtitles, videoUrl, transcrip }: any) => {
         </div>
         <div style={{ flex: 1 }}>
           <Transcription
-            transcript={text}
+            transcript={transcript}
             startTranscation={startTranscation}
+            setTransValue={setTransValue}
           />
-        </div>
-        <div style={{ flex: 1 }}>
-          <>keywords</>
         </div>
       </div>
     </div>
@@ -141,115 +125,152 @@ const Subtitle = ({ videoUrl, currentSubtitle }: any) => {
   );
 };
 
-const Transcription = ({ transcript, startTranscation }: any) => {
+const Transcription = ({
+  transcript,
+  startTranscation,
+  transValue,
+  setTransValue,
+}: any) => {
   return (
     <div>
       <h2>Transcription</h2>
+      <Select
+        defaultValue={transValue}
+        style={{ width: 120, marginBottom: "20px" }}
+        onChange={(e) => setTransValue(e)}
+        options={[
+          { value: "telugu", label: "Telugu" },
+          { value: "hindi", label: "Hindi" },
+          { value: "tamil", label: "Tamil" },
+          { value: "", label: "Select" },
+        ]}
+      />
       {startTranscation && <p style={{ padding: "10px" }}>{transcript}</p>}
     </div>
   );
 };
 
 export const VideoShow: React.FC<any> = () => {
+  const { id } = useParams();
   const [value, setValue] = useState("original");
+  const [transValue, setTransValue] = useState("");
+  const [URL, setURL] = useState({
+    original: localStorage?.getItem("originalURL"),
+    telugu: "",
+    tamil: "",
+    hindi: "",
+  });
 
-  let original =
-    "https://storage.googleapis.com/encode_project_pixelpower/entertainment/AI_1.mp4";
-  let telugu =
-    "https://storage.googleapis.com/encode_project_pixelpower/Output_Video_Folder/Translated_video_Telugu.mp4";
-  let tamil =
-    "https://storage.googleapis.com/encode_project_pixelpower/Output_Video_Folder/Translated_video_Tamil.mp4";
-  let hindi =
-    "https://storage.googleapis.com/encode_project_pixelpower/Output_Video_Folder/Translated_video_Hindi.mp4";
+  const [langTranscripts, setLangTranscripts] = useState({
+    telugu: "",
+    hindi: "",
+    tamil: "",
+  });
 
-  let [videoUrl, setVideoUrl] = useState(original);
+  const [videoUrl, setVideoUrl] = useState(URL?.original);
+  const [transcript, setTranscripts] = useState("");
 
   useEffect(() => {
-    console.log("called");
-    videoUrl =
+    let url =
       value == "original"
-        ? original
+        ? URL?.original
         : value == "telugu"
-        ? telugu
+        ? URL?.telugu
         : value == "hindi"
-        ? hindi
+        ? URL?.hindi
         : value == "tamil"
-        ? tamil
+        ? URL?.tamil
         : "";
-    setVideoUrl(videoUrl);
+    setVideoUrl(url);
   }, [value]);
 
-  const subtitles = [
-    {
-      start: 0,
-      end: 2000,
-      text: "This is the first two seconds 1",
-    },
-    {
-      start: 2001,
-      end: 4000,
-      text: "This is the second two seconds",
-    },
-    {
-      start: 4001,
-      end: 6000,
-      text: "This is the first two seconds",
-    },
-    {
-      start: 6001,
-      end: 8000,
-      text: "This is the second two seconds",
-    },
-    {
-      start: 8001,
-      end: 10000,
-      text: "This is the first two seconds",
-    },
-    {
-      start: 10001,
-      end: 12000,
-      text: "This is the second two seconds",
-    },
-    {
-      start: 12001,
-      end: 14000,
-      text: "This is the first two seconds",
-    },
-    {
-      start: 14001,
-      end: 16000,
-      text: "This is the second two seconds",
-    },
-    {
-      start: 16001,
-      end: 18000,
-      text: "This is the first two seconds",
-    },
-    {
-      start: 18001,
-      end: 20000,
-      text: "This is the second two seconds",
-    },
-    // Add more subtitle objects as needed
-  ];
+  useEffect(() => {
+    let trans =
+      value == ""
+        ? ""
+        : transValue == "telugu"
+        ? langTranscripts?.telugu
+        : transValue == "hindi"
+        ? langTranscripts?.hindi
+        : transValue == "tamil"
+        ? langTranscripts?.tamil
+        : "";
+		console.log(trans,"trans")
+    setTranscripts(trans);
+  }, [transValue]);
 
-  const transcript = "This is the complete transcription of the video.";
+  const [subtitle, setSubTitle] = useState<any>([]);
 
+  const { data, isLoading }: any = useList({
+    resource: `convertedvideos?video=${id}.mp4`,
+  });
+  const videoData: any = data?.data?.videos;
+
+  useEffect(() => {
+    if (videoData) {
+      let url = {
+        telugu: "",
+        hindi: "",
+        tamil: "",
+      };
+      let transcriptions = {
+        telugu: "",
+        hindi: "",
+        tamil: "",
+      };
+      setSubTitle([...videoData[0].data.json_result]);
+      videoData.map((data: any) => {
+        const keys = Object.keys(data);
+
+        if (keys.includes("HindiUrl")) {
+          url.hindi = data?.HindiUrl;
+          transcriptions.hindi = data?.data?.translated_text;
+        }
+        if (keys.includes("TeluguUrl")) {
+          url.telugu = data?.TeluguUrl;
+          transcriptions.telugu = data?.data?.translated_text;
+        }
+        if (keys.includes("TamilUrl")) {
+          transcriptions.tamil = data?.data?.translated_text;
+          url.tamil = data?.TamilUrl;
+        }
+      });
+      setLangTranscripts({
+        ...langTranscripts,
+        ...transcriptions,
+      });
+      setURL({ ...URL, ...url });
+    }
+  }, [videoData]);
+  console.log(transcript);
+  //   console.log(subtitle);
   return (
     <div>
-      <h1>Video Transcript and Subtitles</h1>
-      <Select
-        defaultValue="original"
-        style={{ width: 120, marginBottom: "20px" }}
-        onChange={(e) => setValue(e)}
-        options={[
-          { value: "telugu", label: "Telugu" },
-          { value: "hindi", label: "Hindi" },
-          { value: "tamil", label: "Tamil" },
-          { value: "original", label: "Original" },
-        ]}
-      />
-      <VideoPlayer subtitles={subtitles} videoUrl={videoUrl} />
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : (
+        <>
+          <h1>Video Transcript and Subtitles</h1>
+          <Select
+            defaultValue="original"
+            style={{ width: 120, marginBottom: "20px" }}
+            onChange={(e) => setValue(e)}
+            options={[
+              { value: "telugu", label: "Telugu" },
+              { value: "hindi", label: "Hindi" },
+              { value: "tamil", label: "Tamil" },
+              { value: "original", label: "Original" },
+            ]}
+          />
+          <VideoPlayer
+            subtitles={subtitle}
+            videoUrl={videoUrl}
+            transcript={transcript}
+            transValue={transValue}
+            setTransValue={setTransValue}
+          />
+        </>
+      )}
     </div>
   );
 };

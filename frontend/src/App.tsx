@@ -1,11 +1,9 @@
-import { GitHubBanner, Refine } from "@refinedev/core";
-import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
+import { Refine } from "@refinedev/core";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 
 import {
   ErrorComponent,
   ThemedLayoutV2,
-  ThemedSiderV2,
   useNotificationProvider,
 } from "@refinedev/antd";
 import "@refinedev/antd/dist/reset.css";
@@ -19,9 +17,11 @@ import dataProvider from "@refinedev/simple-rest";
 import { App as AntdApp } from "antd";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import { Header } from "./components/header";
-import { ColorModeContextProvider } from "./contexts/color-mode";
 import { VideoList, VideoShow } from "./pages/Main";
 import StateProvider from "./contexts/generContext";
+import { PowerPixelDataProvider } from "./dataProvider";
+
+export const api = "http://34.123.104.93:3000"
 
 function App() {
   return (
@@ -30,7 +30,7 @@ function App() {
         <RefineKbarProvider>
           <AntdApp>
             <Refine
-              dataProvider={dataProvider("https://api.fake-rest.refine.dev")}
+              dataProvider={PowerPixelDataProvider(api)}
               notificationProvider={useNotificationProvider}
               routerProvider={routerBindings}
               options={{
@@ -57,7 +57,7 @@ function App() {
                   />
                   <Route path="/video">
                     <Route index element={<VideoList />} />
-                    <Route path="show" element={<VideoShow />} />
+                    <Route path="show/:id" element={<VideoShow />} />
                   </Route>
                   {/* <Route path="/blog-posts">
                     <Route index element={<BlogPostList />} />
