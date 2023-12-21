@@ -33,7 +33,9 @@ FROM alpine:3.14.0
 COPY --from=builder /dist/main /
 
 ENV SERVICE_PORT=3000 \
-    AI_URL="https://154c-14-141-24-158.ngrok.io/process_video"
+    AI_URL="http://34.123.104.93:5000/process_video" \
+    VIDEO_OUTPUT_FOLDER="Output_Video_Folder" \
+    BUCKET_NAME="encode_project_pixelpower"
 
 EXPOSE ${SERVICE_PORT}
 

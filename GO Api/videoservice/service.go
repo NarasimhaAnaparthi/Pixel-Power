@@ -29,6 +29,7 @@ type HandlerService struct{}
 func (hs *HandlerService) Bootstrap(r *gin.Engine) {
 	r.POST("/upload", hs.UploadVideo1)
 	r.GET("/videos/:folderName", hs.GetAllGcpVideo2)
+	r.GET("/convertedvideos", hs.GetAllTranscriptionVideo)
 	r.GET("/video/:objectName", hs.GetGcpVideo)
 	r.GET("/lang/video/:objectName", hs.GetGcpVideoLang)
 
@@ -132,7 +133,8 @@ func (hs *HandlerService) GetGcpVideo(c *gin.Context) {
 		"uploadTime":   attrs.Created,
 		"url":          fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucketName, objectName),
 	}
-	apiURL :=  os.Getenv("AI_URL")
+	fmt.Println("responseresponse", response)
+	apiURL := os.Getenv("AI_URL")
 	requestData := RequestBody{
 		VideoURL:            fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucketName, objectName),
 		TranslationLanguage: "ta",
@@ -331,7 +333,6 @@ func MakePOSTRequest(url string, requestData RequestBody) (map[string]interface{
 	return result, nil
 }
 
-
 func (hs *HandlerService) GetGcpVideoLang(c *gin.Context) {
 	ctx := context.Background()
 	// Set up the GCP Cloud Storage client
@@ -380,4 +381,82 @@ func (hs *HandlerService) GetGcpVideoLang(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, responsea)
+}
+
+func (hs *HandlerService) GetAllTranscriptionVideo(c *gin.Context) {
+	ctx := context.Background()
+	client, gcperr := getGCPClient()
+	if gcperr != nil {
+		fmt.Println("from gcp Connection", gcperr)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to Google Cloud Storage"})
+		return
+	}
+	defer client.Close()
+	videoType := c.Query("video")
+	bucketName := "encode_project_pixelpower"
+	folderName := os.Getenv("VIDEO_OUTPUT_FOLDER")
+
+	languageFolder := []string{"Default", "Hindi", "Telugu", "Tamil"}
+	var videos []map[string]interface{}
+	for _, lang := range languageFolder {
+		// query := &storage.Query{Prefix: folderName + "/" + lang + "/", Delimiter: "/"}
+		videoName := strings.Split(videoType, ".mp4")[0]
+		videoName = videoName + ".json"
+		objectName := folderName + "/" + lang + "/" + videoType
+		objectNameJson := folderName + "/" + lang + "/" + videoName
+		jsonPath := fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucketName, objectNameJson)
+		obj := client.Bucket(bucketName).Object(objectName)
+
+		attrs, err := obj.Attrs(ctx)
+		if err != nil {
+			continue
+
+		}
+		data, err := fetchDataFromURL(jsonPath)
+		if err != nil {
+			fmt.Println("Error:", err)
+			data = make(map[string]interface{})
+			// continue
+		}
+
+		filenameInBucket := strings.Split(attrs.Name, "/")
+		// Create the desired JSON response
+		video := gin.H{
+			"fileName":     filenameInBucket[len(filenameInBucket)-1],
+			"modifiedTime": attrs.Updated,
+			"uploadTime":   attrs.Created,
+			lang + "Url":   fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucketName, objectName),
+			"data" : data,
+		}
+		videos = append(videos, video)
+	}
+	if videos == nil {
+		c.JSON(http.StatusOK, gin.H{"videos": make([]int, 0)})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"videos": videos})
+}
+
+func fetchDataFromURL(url string) (map[string]interface{}, error) {
+	// Make an HTTP GET request
+	response, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal the JSON content into a map
+	var result map[string]interface{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
