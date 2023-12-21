@@ -416,7 +416,7 @@ func (hs *HandlerService) GetAllTranscriptionVideo(c *gin.Context) {
 			"fileName":     filenameInBucket[len(filenameInBucket)-1],
 			"modifiedTime": attrs.Updated,
 			"uploadTime":   attrs.Created,
-			"url":          fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucketName, objectName),
+			lang+"Url":          fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucketName, objectName),
 		}
 		videos = append(videos, video)
 	}
