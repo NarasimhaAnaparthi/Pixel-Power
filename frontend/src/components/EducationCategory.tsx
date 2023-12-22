@@ -46,7 +46,7 @@ const EducationCategory = (props: any) => {
       formData.append("video", event.file.originFileObj);
       setLoading(true);
       axiosInstance
-        .post("http://34.123.104.93:3000/upload?videoType=education", formData)
+        .post("http://35.222.121.103:3000/upload?videoType=education", formData)
         .then(({ data }) => {
           console.log(data?.videoName);
           let langArray = ["hi", "te", "ta"];
@@ -54,7 +54,7 @@ const EducationCategory = (props: any) => {
             setTimeout(() => {
               axiosInstance
                 .get(
-                  `http://34.123.104.93:3000/lang/video/${data?.videoName}?videoType=education&lang=${lang}`
+                  `http://35.222.121.103:3000/lang/video/${data?.videoName}?videoType=education&lang=${lang}`
                 )
                 .then(({ data }) => {
                   setLoading(false);
