@@ -21,7 +21,7 @@ import { VideoList, VideoShow } from "./pages/Main";
 import StateProvider from "./contexts/generContext";
 import { PowerPixelDataProvider } from "./dataProvider";
 
-export const api = "http://34.123.104.93:3000"
+export const api = "http://35.222.121.103:3000"
 
 function App() {
   return (
