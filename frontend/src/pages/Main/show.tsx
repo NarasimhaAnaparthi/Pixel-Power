@@ -69,7 +69,7 @@ const VideoPlayer = ({
             ref={videoRef}
             controls
             onPlay={(e) => setStartTranscation(true)}
-            style={{ position: "absolute" }}
+            style={{ position: "absolute",width:"45rem" }}
           >
             {/* Add your video source here */}
             <source src={videoUrl} />
